@@ -50,15 +50,7 @@ The report contains the complete methodology and discussion:
 
 Python 3.10 or newer is required.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
-pytest -m "not integration"
-jupyter lab
-```
-
-Open [`perceptron_mnist.ipynb`](perceptron_mnist.ipynb). It downloads full MNIST into ignored `data/`, preserves the final 10,000 samples for testing, and creates a deterministic validation split from the first 60,000 samples. Run `pytest -m integration` after MNIST is cached to include the full notebook and MNIST acceptance tests.
+Open [`perceptron_mnist.ipynb`](perceptron_mnist.ipynb). It downloads full MNIST into ignored `data/`, preserves the final 10,000 samples for testing, and creates a deterministic validation split from the first 60,000 samples.
 
 ## Training experiments
 
@@ -71,7 +63,7 @@ Notebook executes two explicit, reproducible profiles:
 
 MNIST remains grayscale: preprocessing divides pixel values by 255 but does not threshold them. The cached dataset contains all 256 intensity values. Preserving stroke intensity produced the strongest tested result.
 
-`MultilayerPerceptron(hidden_layers=(10,))` is the main model API. It accepts one or two hidden layers. `OneHiddenLayerNetwork` remains as a compatibility wrapper for earlier code.
+`MultilayerPerceptron(hidden_layers=(10,))` is the main model. It accepts one or two hidden layers.
 
 Training returns train/validation loss, accuracy, and effective learning-rate histories. The notebook plots these together to distinguish underfitting from overfitting. It also renders decision evidence:
 
@@ -84,21 +76,11 @@ Training returns train/validation loss, accuracy, and effective learning-rate hi
 
 Raw hidden kernels remain accessible, but they are not presented as digit templates: nonlinear activation and downstream weights determine their effect. Red evidence supports the selected class; blue evidence opposes it. Plots display inside the notebook and are not automatically written to image files.
 
-## Repository map
-
-```text
-notebook                     Narrative experiment and main entry point
-sources/                     Tested data, model, metric, and plot functions
-assets/                      Selected figures from the 2022 project
-docs/                        Original report and presentation
-archive/original-sources/    Three selected, unmodified 2022 scripts
-```
-
 ## What changed in this reconstruction
 
 The original scripts mixed data loading, model code, plotting, and execution in global state. This reconstruction separates those concerns, uses sample-major array shapes consistently, stabilizes softmax numerically, makes randomness explicit, and measures validation behavior. Optional mini-batches, momentum, decay, early stopping, and one extra hidden layer support controlled experiments without hiding changes behind a tuned default.
 
-The debugging journey mattered as much as the final curves: I found shape errors that NumPy accepted silently, a softmax normalization over the wrong axis, exploding exponentials, and dataset-format mismatches. Those failures motivated the explicit contracts and tests now used throughout the package.
+The debugging journey mattered as much as the final curves: I found shape errors that NumPy accepted silently, a softmax normalization over the wrong axis, exploding exponentials, and dataset-format mismatches.
 
 ## Authorship
 
