@@ -55,6 +55,39 @@ def deterministic_split(
     )
 
 
+def split_mnist(
+    images: np.ndarray,
+    labels: np.ndarray,
+    train_size: int = 60_000,
+    validation_fraction: float = 0.1,
+    seed: int = 42,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Keep MNIST test tail untouched and split training pool deterministically."""
+    features = np.asarray(images)
+    targets = np.asarray(labels)
+    if len(features) != len(targets):
+        raise ValueError("images and labels must contain the same number of samples")
+    if not 0 < train_size < len(features):
+        raise ValueError("train_size must leave at least one test sample")
+    if not 0 < validation_fraction < 1:
+        raise ValueError("validation_fraction must be between 0 and 1")
+
+    pool_images, test_images = features[:train_size], features[train_size:]
+    pool_labels, test_labels = targets[:train_size], targets[train_size:]
+    indices = np.random.default_rng(seed).permutation(train_size)
+    validation_size = max(1, round(train_size * validation_fraction))
+    validation_indices = indices[:validation_size]
+    training_indices = indices[validation_size:]
+    return (
+        pool_images[training_indices].copy(),
+        pool_labels[training_indices].copy(),
+        pool_images[validation_indices].copy(),
+        pool_labels[validation_indices].copy(),
+        test_images.copy(),
+        test_labels.copy(),
+    )
+
+
 def resize_images_nearest(images: np.ndarray, side: int = 14) -> np.ndarray:
     """Resize flattened square images with nearest-neighbor sampling."""
     features = np.asarray(images)
